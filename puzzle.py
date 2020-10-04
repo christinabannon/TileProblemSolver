@@ -1,7 +1,3 @@
-# the puzzle will be one of the 4 Types
-# each puzzle will be a 2d array
-#
-
 class Puzzle(object):
     puzzleType = 0
     graph = [[]]

@@ -4,9 +4,6 @@ import printer
 import numpy as np
 import pieces
 
-from puzzle import Puzzle
-
-
 
 class Solver(object):
 
@@ -144,9 +141,10 @@ class Solver(object):
     def solve(self, piecesFit, piecesLeft, puzzleStack, spaces = ""):
         if (len(piecesFit) == len(self.allPieces)):
             print(printer.getPretty(puzzleStack[len(puzzleStack) - 1], spaces))
-            print(spaces + "EXITED THROUGH COMPLETION")
+            print(spaces + "COMPLETED")
             print("backtracks = " + str(self.backtracks))
-            sys.exit(0)
+            # sys.exit(0)
+            return True
         else:
             for pieceIndex in range(0, len(piecesLeft)):
                 pieceNumber = piecesLeft[pieceIndex]
@@ -159,9 +157,12 @@ class Solver(object):
                     piecesFit.append(pieceNumber)
                     piecesLeft.remove(pieceNumber)
                     puzzleStack.append(newPuzzle)
-                    self.solve(piecesFit, piecesLeft, puzzleStack, (spaces + "    "))
-                    puzzleStack.pop()
-                    piecesFit.pop()
-                    piecesLeft = oldPiecesLeft
-                    self.backtracks += 1
+                    solved = self.solve(piecesFit, piecesLeft, puzzleStack, (spaces + "    "))
+                    if (solved):
+                        return True
+                    else:
+                        puzzleStack.pop()
+                        piecesFit.pop()
+                        piecesLeft = oldPiecesLeft
+                        self.backtracks += 1
 
