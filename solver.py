@@ -75,7 +75,6 @@ class Solver(object):
 
     def fitPiece(self, puzzle, piece):
         # goal is to rotate each block to see if that helps it fit into the puzzle
-
         fit, testPuzzle = self.loopCells(puzzle, piece)
         if not fit:
             piece = np.flip(piece, 0)
@@ -88,20 +87,21 @@ class Solver(object):
                     fit, testPuzzle = self.loopCells(puzzle, piece)
         return fit, testPuzzle
 
+
     def puzzleValid(self, fits, puzzle):
-        # going to look for lone 2 cube combos, return false if they exist
+        # going to look for cube combos less than 3, return false if they exist
         if fits:
             row = 0
             while row < len(puzzle):
                 col = 0
                 while col < len(puzzle[0]):
                     if puzzle[row][col] == -1:
-                        piecesConnected = 1
-                        piecesConnected = self.checkConnections(puzzle, [row, col], [row, col], piecesConnected)
-                        print("Puzzle[" + str(row) + "][" + str(col) + "] connections = " + str(piecesConnected))
+                        piecesConnected = self.checkConnections(puzzle, [row, col], [row, col])
                         if piecesConnected < 3:
                             return False
-                    col += 2
+                        col += 3
+                    else:
+                        col += 1
                 row += 1
             return True
         else:
@@ -109,8 +109,6 @@ class Solver(object):
 
 
     def checkConnections(self, puzzle, lastCell, currentCell, piecesConnected=1):
-        lastRow = lastCell[0]
-        lastCol = lastCell[1]
         row = currentCell[0]
         col = currentCell[1]
 
@@ -142,37 +140,28 @@ class Solver(object):
         piecesAvailable = np.setdiff1d(piecesAvailable, piecesFailed)
         return piecesAvailable
 
-    def solve(self, piecesFit, piecesLeft, puzzles, spaces = ""):
+
+    def solve(self, piecesFit, piecesLeft, puzzleStack, spaces = ""):
         if (len(piecesFit) == len(self.allPieces)):
-            print(printer.getPretty(puzzles[len(puzzles) - 1], spaces))
+            print(printer.getPretty(puzzleStack[len(puzzleStack) - 1], spaces))
             print(spaces + "EXITED THROUGH COMPLETION")
             print("backtracks = " + str(self.backtracks))
             sys.exit(0)
         else:
-            # for pieceNumber in piecesLeft:
             for pieceIndex in range(0, len(piecesLeft)):
                 pieceNumber = piecesLeft[pieceIndex]
-                # print(spaces + "pieceNumber = " + str(pieceNumber))
-                # print(spaces + "piecesFit:" + str(piecesFit))
-                # print(spaces + "piecesLeft:" + str(piecesLeft))
                 piece = pieces.getPiece(pieceNumber)
-                fits, newPuzzle = self.fitPiece(puzzles[len(puzzles)-1], piece)
-                #fits = self.puzzleValid(fits, newPuzzle)
+                fits, newPuzzle = self.fitPiece(puzzleStack[len(puzzleStack)-1], piece)
+                fits = self.puzzleValid(fits, newPuzzle)
                 if fits:
-                    # print(spaces + "pieceNumber = " + str(pieceNumber) + " fits")
                     print(printer.getPretty(newPuzzle, spaces))
                     oldPiecesLeft = copy.deepcopy(piecesLeft)
                     piecesFit.append(pieceNumber)
                     piecesLeft.remove(pieceNumber)
-                    puzzles.append(newPuzzle)
-                    valid = self.solve(piecesFit, piecesLeft, puzzles, (spaces + "    "))
-                    puzzles.pop()
-                    poppedPiece = piecesFit.pop()
+                    puzzleStack.append(newPuzzle)
+                    self.solve(piecesFit, piecesLeft, puzzleStack, (spaces + "    "))
+                    puzzleStack.pop()
+                    piecesFit.pop()
                     piecesLeft = oldPiecesLeft
                     self.backtracks += 1
-                    # print(spaces + "-poppedPiece = " + str(poppedPiece))
-                    # print(spaces + "-piecesFit:" + str(piecesFit))
-                    # print(spaces + "-piecesLeft:" + str(piecesLeft))
-                # else:
-                #     print(spaces + "pieceNumber = " + str(pieceNumber) + " does NOT fit")
 

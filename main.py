@@ -54,7 +54,7 @@ def choosePuzzle():
 
 def solve():
     puzzleType = type
-    puzzle = Puzzle("4")
+    puzzle = Puzzle("1")
     solver = Solver(puzzle, [1,2,3,4,5])
     piecesUsed = []
     puzzleArray = [puzzle.getGraph()]
