@@ -59,7 +59,7 @@ def solve():
     solver = Solver(puzzle, allPieces)
     piecesUsed = []
     puzzleArray = [puzzle.getGraph()]
-    solver.solve([], allPieces, puzzle);
+    solver.solve([], allPieces, puzzleArray);
 
 
 

@@ -11,4 +11,4 @@ def getPretty(matrix, spacing):
             else:
                 prettyPuzzle += "[" + str(col) + "]"
         prettyPuzzle += "\n"
-        return prettyPuzzle
+    return prettyPuzzle

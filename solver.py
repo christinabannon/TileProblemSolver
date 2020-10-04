@@ -96,7 +96,7 @@ class Solver(object):
 
     def solve(self, piecesFit, piecesLeft, puzzles, spaces = ""):
         if (len(piecesFit) == len(self.allPieces)):
-            print(printer.getPretty(puzzles[len(puzzles) - 1]))
+            print(printer.getPretty(puzzles[len(puzzles) - 1], spaces))
             print("EXITED THROUGH COMPLETION")
             sys.exit(0)
         else:
