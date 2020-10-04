@@ -14,6 +14,7 @@ class Solver(object):
     def __init__(self, puzzle, allPieces):
         self.puzzle = puzzle
         self.allPieces = allPieces
+        self.backtracks = 0
 
 
     def fitCell(self, pieceValue, puzzleValue):
@@ -87,17 +88,65 @@ class Solver(object):
                     fit, testPuzzle = self.loopCells(puzzle, piece)
         return fit, testPuzzle
 
+    def puzzleValid(self, fits, puzzle):
+        # going to look for lone 2 cube combos, return false if they exist
+        if fits:
+            row = 0
+            while row < len(puzzle):
+                col = 0
+                while col < len(puzzle[0]):
+                    if puzzle[row][col] == -1:
+                        piecesConnected = 1
+                        piecesConnected = self.checkConnections(puzzle, [row, col], [row, col], piecesConnected)
+                        print("Puzzle[" + str(row) + "][" + str(col) + "] connections = " + str(piecesConnected))
+                        if piecesConnected < 3:
+                            return False
+                    col += 2
+                row += 1
+            return True
+        else:
+            return False
+
+
+    def checkConnections(self, puzzle, lastCell, currentCell, piecesConnected=1):
+        lastRow = lastCell[0]
+        lastCol = lastCell[1]
+        row = currentCell[0]
+        col = currentCell[1]
+
+        if (piecesConnected < 3 and (row - 1) >= 0) and (puzzle[row - 1][col] == -1) and ([row - 1, col] != lastCell):
+            piecesConnected += 1
+            nextCell = [row - 1, col]
+            piecesConnected = self.checkConnections(puzzle, currentCell, nextCell, piecesConnected)
+
+        if (piecesConnected < 3 and row + 1 < len(puzzle)) and (puzzle[row + 1][col] == -1) and ([row + 1, col] != lastCell):
+            piecesConnected += 1
+            nextCell = [row + 1, col]
+            piecesConnected = self.checkConnections(puzzle, currentCell, nextCell, piecesConnected)
+
+        if (piecesConnected < 3 and (col - 1) >= 0) and (puzzle[row][col - 1] == -1) and ([row, col - 1] != lastCell):
+            piecesConnected += 1
+            nextCell = [row, col - 1]
+            piecesConnected = self.checkConnections(puzzle, currentCell, nextCell, piecesConnected)
+
+        if (piecesConnected < 3 and (col + 1) < len(puzzle[0])) and (puzzle[row][col + 1] == -1) and ([row, col + 1] != lastCell):
+            piecesConnected += 1
+            nextCell = [row, col + 1]
+            piecesConnected = self.checkConnections(puzzle, currentCell, nextCell, piecesConnected)
+
+        return piecesConnected
+
 
     def getAvailable(self, piecesFit, piecesFailed):
         piecesAvailable = np.setdiff1d(self.allPieces, piecesFit)
         piecesAvailable = np.setdiff1d(piecesAvailable, piecesFailed)
         return piecesAvailable
 
-
     def solve(self, piecesFit, piecesLeft, puzzles, spaces = ""):
         if (len(piecesFit) == len(self.allPieces)):
             print(printer.getPretty(puzzles[len(puzzles) - 1], spaces))
-            print("EXITED THROUGH COMPLETION")
+            print(spaces + "EXITED THROUGH COMPLETION")
+            print("backtracks = " + str(self.backtracks))
             sys.exit(0)
         else:
             # for pieceNumber in piecesLeft:
@@ -108,19 +157,22 @@ class Solver(object):
                 # print(spaces + "piecesLeft:" + str(piecesLeft))
                 piece = pieces.getPiece(pieceNumber)
                 fits, newPuzzle = self.fitPiece(puzzles[len(puzzles)-1], piece)
+                #fits = self.puzzleValid(fits, newPuzzle)
                 if fits:
-                    print(spaces + "pieceNumber = " + str(pieceNumber) + " fits")
+                    # print(spaces + "pieceNumber = " + str(pieceNumber) + " fits")
+                    print(printer.getPretty(newPuzzle, spaces))
                     oldPiecesLeft = copy.deepcopy(piecesLeft)
                     piecesFit.append(pieceNumber)
                     piecesLeft.remove(pieceNumber)
                     puzzles.append(newPuzzle)
-                    valid = self.solve(piecesFit, piecesLeft, puzzles, (spaces + "  "))
+                    valid = self.solve(piecesFit, piecesLeft, puzzles, (spaces + "    "))
                     puzzles.pop()
                     poppedPiece = piecesFit.pop()
                     piecesLeft = oldPiecesLeft
-                    print(spaces + "-poppedPiece = " + str(poppedPiece))
-                    print(spaces + "-piecesFit:" + str(piecesFit))
-                    print(spaces + "-piecesLeft:" + str(piecesLeft))
-                else:
-                    print(spaces + "pieceNumber = " + str(pieceNumber) + " does NOT fit")
+                    self.backtracks += 1
+                    # print(spaces + "-poppedPiece = " + str(poppedPiece))
+                    # print(spaces + "-piecesFit:" + str(piecesFit))
+                    # print(spaces + "-piecesLeft:" + str(piecesLeft))
+                # else:
+                #     print(spaces + "pieceNumber = " + str(pieceNumber) + " does NOT fit")
 
